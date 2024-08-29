@@ -16,19 +16,21 @@ export default function Game() {
 
   React.useEffect(() => {
     const fetchGameData = async () => {
-      const res = await axios.get<string>(
-        "https://wikitrivia-data.tomjwatson.com/items.json"
+      const res = await axios.get<Item[]>(
+        "/api/get-items"
       );
       const items: Item[] = res.data
-        .trim()
-        .split("\n")
-        .map((line) => {
-          return JSON.parse(line);
+        .map((item) => {
+          // Convert went_live_at to a Date object if it's a valid unix timestamp
+          if (typeof item.went_live_at === 'number') {
+            item.went_live_at = new Date(item.went_live_at);
+          }
+          return item;
         })
         // Filter out questions which give away their answers
-        .filter((item) => !item.label.includes(String(item.year)))
-        .filter((item) => !item.description.includes(String(item.year)))
-        .filter((item) => !item.description.includes(String("st century" || "nd century" || "th century")))
+        // .filter((item) => !item.label.includes(String(item.went_live_at)))
+        // .filter((item) => !item.description.includes(String(item.went_live_at)))
+        // .filter((item) => !item.description.includes(String("st century" || "nd century" || "th century")))
         // Filter cards which have bad data as submitted in https://github.com/tom-james-watson/wikitrivia/discussions/2
         .filter((item) => !(item.id in badCards));
       setItems(items);

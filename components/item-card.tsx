@@ -15,6 +15,7 @@ type Props = {
 };
 
 const datePropIdMap: { [datePropId: string]: string } = {
+  P38: "went live at",
   P575: "discovered", // or invented
   P7589: "date of assent",
   P577: "published",
@@ -49,19 +50,15 @@ export default function ItemCard(props: Props) {
     config: { mass: 5, tension: 750, friction: 100 },
   });
 
-  const type = React.useMemo(() => {
-    const safeDescription = item.description.replace(/ \(.+\)/g, "");
 
-    if (item.description.length < 60 && !/\d\d/.test(safeDescription)) {
-      return item.description.replace(/ \(.+\)/g, "");
-    }
-
-    if (item.instance_of.includes("human") && item.occupations !== null) {
-      return item.occupations[0];
-    }
-
-    return item.instance_of[0];
-  }, [item]);
+const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false // Use 24-hour format, set to true for 12-hour format
+} as Intl.DateTimeFormatOptions;
 
   return (
     <Draggable draggableId={item.id} index={index} isDragDisabled={!draggable}>
@@ -95,12 +92,12 @@ export default function ItemCard(props: Props) {
             >
               <div className={styles.top}>
                 <div className={styles.label}>{capitalize(item.label)}</div>
-                <div className={styles.description}>{capitalize(type)}</div>
+                <div className={styles.description}>PETITION</div>
               </div>
               <div
                 className={styles.image}
                 style={{
-                  backgroundImage: `url("${createWikimediaImage(item.image)}")`,
+                  backgroundImage: `url("${item.image}")`,
                 }}
               ></div>
               <animated.div
@@ -111,9 +108,7 @@ export default function ItemCard(props: Props) {
               >
                 <span>
                   {"played" in item
-                    ? item.year < -10000
-                      ? item.year.toLocaleString()
-                      : item.year.toString()
+                    ? item.went_live_at.toLocaleString(undefined, options)
                     : datePropIdMap[item.date_prop_id]}
                 </span>
               </animated.div>
@@ -129,7 +124,7 @@ export default function ItemCard(props: Props) {
             >
               <span className={styles.label}>{capitalize(item.label)}</span>
               <span className={styles.date}>
-                {capitalize(datePropIdMap[item.date_prop_id])}: {item.year}
+                {capitalize(datePropIdMap[item.date_prop_id])}: {item.went_live_at.toLocaleString(undefined, options)}
               </span>
               <span className={styles.description}>{item.description}.</span>
               <a
